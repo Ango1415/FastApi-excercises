@@ -40,3 +40,43 @@ async def read_items_alias(q: Annotated[str | None, Query(alias="item-query")] =
     if q:
         results.update({"q": q})
     return results
+
+"""
+Custom Validation: There could be cases where you need to do some custom validation that can't be done with the 
+parameters shown above. In those cases, you can use a custom validator function that is applied after the normal 
+validation (e.g. after validating that the value is a str).
+You can achieve that using Pydantic's 'AfterValidator' inside of Annotated.
+(Pydantic also has BeforeValidator and others)
+"""
+from pydantic import AfterValidator
+import random
+
+data = {
+    "isbn-9781529046137": "The Hitchhiker's Guide to the Galaxy",
+    "imdb-tt0371724": "The Hitchhiker's Guide to the Galaxy",
+    "isbn-9781439512982": "Isaac Asimov: The Complete Stories, Vol. 2",
+}
+
+def check_valid_id(id: str):
+    """
+    For example, this custom validator checks that the item ID starts with 'isbn-' for an ISBN book number or with
+    'imdb-' for an IMDB movie URL ID
+    :param id:
+    :return:
+    """
+    if not id.startswith(("isbn-", "imdb-")):
+        raise ValueError('Invalid ID format, it must start with "isbn-" or "imdb-"')
+    return id
+
+"""
+These custom validators are for things that can be checked with only the same data provided in the request.
+If you need to do any type of validation that requires communicating with any external component, like a database or 
+another API, you should instead use FastAPI Dependencies, you will learn about them later.
+"""
+@app.get("/items/custom_validation/")
+async def read_items_custom_validation(id: Annotated[str | None, AfterValidator(check_valid_id)] = None):
+    if id:
+        item = data.get(id)
+    else:
+        id, item = random.choice(list(data.items()))
+    return {"id": id, "name": item}

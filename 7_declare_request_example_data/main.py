@@ -4,7 +4,7 @@ That extra info will be added as-is to the output JSON Schema for that model, an
 """
 
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 app = FastAPI()
 
@@ -45,6 +45,13 @@ class ItemNoExample(BaseModel):
     tax: float | None = None
 
 
+class ItemField(BaseModel):
+    name: str = Field(examples=["Foo"])
+    description: str | None = Field(default=None, examples=["A very nice Item"])
+    price: float = Field(examples=[35.4])
+    tax: float | None = Field(default=None, examples=[3.2])
+
+
 @app.put("/items/{item_id}")
 async def update_item(item_id: int, item: Item):
     results = {"item_id": item_id, "item": item}
@@ -54,4 +61,12 @@ async def update_item(item_id: int, item: Item):
 async def update_item_no_example(item_id: int, item: ItemNoExample):
     results = {"item_id": item_id, "item": item}
     return results
+
+@app.put("/items/{item_id}/field_example")
+async def update_item_field(item_id: int, item: ItemField):
+    results = {"item_id": item_id, "item": item}
+    return results
+
+"""
+"""
 

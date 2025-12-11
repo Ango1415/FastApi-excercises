@@ -106,3 +106,22 @@ async def create_multiple_images(images: list[Image]):
     """
     return images
 
+@app.post("/index-weights/")
+async def create_index_weights(weights: dict[int, float]):
+    """
+    Bodies of arbitrary dicts: You can also declare a body as a dict with keys of some type and values of some other
+    type. This way, you don't have to know beforehand what the valid field/attribute names are (as would be the case
+    with Pydantic models). This would be useful if you want to receive keys that you don't already know.
+    :param weights: weights dictionary with integer keys and float values
+    :return: weights dictionary
+    """
+    return weights
+
+"""
+Another useful case is when you want to have keys of another type (e.g., int).
+In this case, you would accept any dict as long as it has int keys with float values
+Keep in mind that JSON only supports str as keys. But Pydantic has automatic data conversion.
+This means that, even though your API clients can only send strings as keys, as long as those strings contain pure 
+integers, Pydantic will convert them and validate them.
+And the dict you receive as weights will actually have int keys and float values.
+"""

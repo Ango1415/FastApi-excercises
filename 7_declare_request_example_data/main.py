@@ -2,8 +2,8 @@
 You can declare examples of the data your app can receive. Here are several ways to do it.
 That extra info will be added as-is to the output JSON Schema for that model, and it will be used in the API docs.
 """
-
-from fastapi import FastAPI
+from typing import Annotated
+from fastapi import FastAPI, Body
 from pydantic import BaseModel, Field
 
 app = FastAPI()
@@ -68,5 +68,107 @@ async def update_item_field(item_id: int, item: ItemField):
     return results
 
 """
+examples in JSON Schema - OpenAPI: When using any of:
+    Path()
+    Query()
+    Header()
+    Cookie()
+    Body()
+    Form()
+    File()
+You can also declare a group of examples with additional information that will be added to their JSON Schemas inside 
+of OpenAPI.
 """
+@app.put("/items/{item_id}/multiple_body_examples/")
+async def update_item_multiple_body_examples(
+    item_id: int,
+    item: Annotated[
+        ItemNoExample,
+        Body(
+            examples=[
+                {
+                    "name": "Foo",
+                    "description": "A very nice Item",
+                    "price": 35.4,
+                    "tax": 3.2,
+                },
+                {
+                    "name": "Bar",
+                    "price": "35.4",
+                },
+                {
+                    "name": "Baz",
+                    "price": "thirty five point four",
+                },
+            ],
+        ),
+    ],
+):
+    """
+    Here we pass examples containing one example of the data expected in Body().
+    You can of course also pass multiple examples.
+    :param item_id:
+    :param item:
+    :return:
+    """
+    results = {"item_id": item_id, "item": item}
+    return results
 
+
+"""
+Using the openapi_examples Parameter: You can declare the OpenAPI-specific examples in FastAPI with the parameter
+openapi_examples for:
+    Path()
+    Query()
+    Header()
+    Cookie()
+    Body()
+    Form()
+    File()
+The keys of the dict identify each example, and each value is another dict.
+Each specific example dict in the examples can contain:
+    summary: Short description for the example.
+    description: A long description that can contain Markdown text.
+    value: This is the actual example shown, e.g. a dict.
+    externalValue: alternative to value, a URL pointing to the example. Although this might not be supported by as many tools as value.
+You can use it like this:
+"""
+@app.put("/items/{item_id}/openapi-example/")
+async def update_item_openapi_example(
+    *,
+    item_id: int,
+    item: Annotated[
+        ItemNoExample,
+        Body(
+            openapi_examples={
+                "normal": {
+                    "summary": "A normal example",
+                    "description": "A **normal** item works correctly.",
+                    "value": {
+                        "name": "Foo",
+                        "description": "A very nice Item",
+                        "price": 35.4,
+                        "tax": 3.2,
+                    },
+                },
+                "converted": {
+                    "summary": "An example with converted data",
+                    "description": "FastAPI can convert price `strings` to actual `numbers` automatically",
+                    "value": {
+                        "name": "Bar",
+                        "price": "35.4",
+                    },
+                },
+                "invalid": {
+                    "summary": "Invalid data is rejected with an error",
+                    "value": {
+                        "name": "Baz",
+                        "price": "thirty five point four",
+                    },
+                },
+            },
+        ),
+    ],
+):
+    results = {"item_id": item_id, "item": item}
+    return results

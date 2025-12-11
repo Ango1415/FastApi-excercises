@@ -119,3 +119,28 @@ async def update_item_body_and_query(
     if q:
         results.update({"q": q})
     return results
+
+@app.put("/items/{item_id}/embedded")
+async def update_item_embedded(item_id: int, item: Annotated[Item, Body(embed=True)]):
+    """
+    If you want it to expect a JSON with a key item and inside of it the model contents, as it does when you declare
+    extra body parameters, you can use the special Body parameter embed
+    In this case FastAPI will expect a body like:
+    {
+        "item": {
+            "name": "Foo",
+            "description": "The pretender",
+            "price": 42.0,
+            "tax": 3.2
+        }
+    }
+    instead of:
+    {
+        "name": "Foo",
+        "description": "The pretender",
+        "price": 42.0,
+        "tax": 3.2
+    }
+    """
+    results = {"item_id": item_id, "item": item}
+    return results

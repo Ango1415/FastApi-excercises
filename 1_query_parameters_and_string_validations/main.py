@@ -68,13 +68,14 @@ def check_valid_id(id: str):
         raise ValueError('Invalid ID format, it must start with "isbn-" or "imdb-"')
     return id
 
-"""
-These custom validators are for things that can be checked with only the same data provided in the request.
-If you need to do any type of validation that requires communicating with any external component, like a database or 
-another API, you should instead use FastAPI Dependencies, you will learn about them later.
-"""
+
 @app.get("/items/custom_validation/")
 async def read_items_custom_validation(id: Annotated[str | None, AfterValidator(check_valid_id)] = None):
+    """
+    These custom validators are for things that can be checked with only the same data provided in the request.
+    If you need to do any type of validation that requires communicating with any external component, like a database or
+    another API, you should instead use FastAPI Dependencies, you will learn about them later.
+    """
     if id:
         item = data.get(id)
     else:
